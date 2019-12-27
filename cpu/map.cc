@@ -62,6 +62,7 @@ void Map::Render() {
 
 void Map::ASCIIDisplay() {
     wmove(stdscr, 0, 0);
+    wprintw(stdscr, "Generation %d:\n", _generation);
     for (size_t j = 0; j < _height; j++) {
         for (size_t i = 0; i < _width; i++) {
             if (_map[j * _width + i] == ALIVE) {
