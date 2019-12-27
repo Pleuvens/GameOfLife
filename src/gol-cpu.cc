@@ -15,7 +15,7 @@ int main() {
     signal(SIGINT, sigHandler);
     Map m = Map(20, 20);
     while (running) {
-        m.Render();
+        m.BasicCPURender();
         m.ASCIIDisplay();
         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     }

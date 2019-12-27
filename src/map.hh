@@ -13,10 +13,10 @@ public:
     ~Map();
 
     bool IsValidCoord(size_t j, size_t i);
-    int NumberOfAliveNeighbours(size_t j, size_t i);
-    void Init(); 
+    int BasicCPUNumberOfAliveNeighbours(size_t j, size_t i);
+    void BasicCPUInit(); 
     void ASCIIDisplay();
-    void Render();
+    void BasicCPURender();
 private:
     size_t _height;
     size_t _width;

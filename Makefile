@@ -1,9 +1,9 @@
 CC=g++
 CXXFLAGS= -g -Wall -Wextra -Werror -pedantic -std=c++17
 LDFLAGS= -lncurses
-CPUOBJ= map.o main.o
+CPUOBJ= map.o gol-cpu.o
 
-VPATH=cpu/
+VPATH=src/
 
 cpu: $(CPUOBJ)
 	$(CC) $(CXXFLAGS) $(CPUOBJ) -o gol-cpu $(LDFLAGS)
