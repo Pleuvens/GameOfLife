@@ -17,10 +17,6 @@ Map::~Map() {
     endwin();
 }
 
-bool Map::IsValidCoord(size_t j, size_t i) {
-    return j < _height && i < _width;
-}
-
 int Map::BasicCPUNumberOfAliveNeighbours(size_t j, size_t i) {
     int nb = 0;
     for (size_t y = j - 1; y < j + 2 ; y++) {

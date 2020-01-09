@@ -12,7 +12,7 @@ public:
     Map(size_t height, size_t width);
     ~Map();
 
-    bool IsValidCoord(size_t j, size_t i);
+    inline bool IsValidCoord(size_t j, size_t i) { return j < _height && i < _width; }
     int BasicCPUNumberOfAliveNeighbours(size_t j, size_t i);
     void BasicCPUInit(); 
     void ASCIIDisplay();
