@@ -2,6 +2,7 @@
 #include <ctime>
 #include <iostream>
 #include <ncurses.h>
+#include <thread>
 
 #include "map.hh"
 
@@ -58,6 +59,42 @@ void Map::BasicCPURender() {
         }
     }
     _generation++;
+}
+
+void Map::ParallelCPURender() {
+    if (!_generation) {
+        BasicCPUInit();
+        _generation++;
+        return;
+    }
+    auto nb_threads = std::thread::hardware_concurrency();
+    std::vector<std::thread> tasks = std::vector<std::thread>(nb_threads);
+    for (size_t i = 0; i < nb_threads; i++) {
+        tasks[i] = std::thread(&Map::ParallelCPURenderTask, this,
+                i * (_height / nb_threads),
+                (i + 1) * (_height / nb_threads),
+                i * (_width / nb_threads),
+                (i + 1) * (_width / nb_threads));
+    }
+    for (size_t i = 0; i < nb_threads; i++) {
+        tasks[i].join();
+    }
+    _generation++;
+}
+
+void Map::ParallelCPURenderTask(size_t ymin, size_t ymax, size_t xmin, size_t xmax) {
+    for (size_t j = ymin; j < ymax; j++) {
+        for (size_t i = xmin; i < xmax; i++) {
+            auto nbAliveNeighbours = BasicCPUNumberOfAliveNeighbours(j, i);
+            if (_map[j * _width + i] == ALIVE) {
+                if (nbAliveNeighbours != 2 && nbAliveNeighbours != 3)
+                    _map[j * _width + i] = DEAD;
+            } else {
+                if (nbAliveNeighbours == 3)
+                    _map[j * _width + i] = ALIVE;
+            }
+        }
+    }
 }
 
 void Map::ASCIIDisplay() {

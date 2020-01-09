@@ -17,6 +17,9 @@ public:
     void BasicCPUInit(); 
     void ASCIIDisplay();
     void BasicCPURender();
+
+    void ParallelCPURender();
+    void ParallelCPURenderTask(size_t ymin, size_t ymax, size_t xmin, size_t xmax);
 private:
     size_t _height;
     size_t _width;
