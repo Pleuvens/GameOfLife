@@ -1,8 +1,6 @@
 #include "map.hh"
 
-#include <cstdlib>
 #include <ctime>
-#include <iostream>
 #include <ncurses.h>
 #include <thread>
 
