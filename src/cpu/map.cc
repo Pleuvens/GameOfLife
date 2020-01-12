@@ -3,9 +3,9 @@
 #include <ctime>
 #include <fstream>
 #include <ncurses.h>
-#include <thread>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
 Map::Map(const std::string& path)
     : height_{20}
@@ -29,14 +29,14 @@ Map::Map(const std::string& path)
         {
             switch (line[i])
             {
-                case '.':
-                    map_[j * width_ + i] = Cell::dead;
-                    break;
-                case 'O':
-                    map_[j * width_ + i] = Cell::alive;
-                    break;
-                default:
-                    throw std::invalid_argument("invalid format");
+            case '.':
+                map_[j * width_ + i] = Cell::dead;
+                break;
+            case 'O':
+                map_[j * width_ + i] = Cell::alive;
+                break;
+            default:
+                throw std::invalid_argument("invalid format");
             }
         }
         ++j;
