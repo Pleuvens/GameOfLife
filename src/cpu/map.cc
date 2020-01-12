@@ -62,12 +62,12 @@ Map::~Map()
     endwin();
 }
 
-int Map::number_of_alive_neighbours(ssize_t j, ssize_t i) const
+int Map::number_of_alive_neighbours(size_t j, size_t i) const
 {
-    ssize_t up_j = (j - 1 + height_) % height_;
-    ssize_t down_j = (j + 1) % height_;
-    ssize_t left_i = (i - 1 + width_) % width_;
-    ssize_t right_i = (i + 1) % width_;
+    size_t up_j = (j - 1 + height_) % height_;
+    size_t down_j = (j + 1) % height_;
+    size_t left_i = (i - 1 + width_) % width_;
+    size_t right_i = (i + 1) % width_;
 
     int nb = map_[up_j * width_ + left_i] == Cell::alive;
     nb += map_[up_j * width_ + i] == Cell::alive;

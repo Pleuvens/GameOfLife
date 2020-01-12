@@ -29,7 +29,7 @@ public:
 
     void ascii_display() const;
 
-    int number_of_alive_neighbours(ssize_t j, ssize_t i) const;
+    int number_of_alive_neighbours(size_t j, size_t i) const;
 
     void basic_cpu_compute();
     void parallel_cpu_compute();
