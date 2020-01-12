@@ -1,6 +1,7 @@
 NULL=
 
 CC=g++
+NVCC=nvcc
 
 CXXFLAGS= \
 	  -Wall \
@@ -8,32 +9,43 @@ CXXFLAGS= \
 	  -Werror \
 	  -pedantic \
 	  -std=c++17 \
-	  -g \
-	  -fsanitize=address \
+          -O2 \
 	  $(NULL)
 
 LDFLAGS= \
 	 -lncurses \
 	 -lpthread \
-	 -fsanitize=address \
 	 $(NULL)
 
 OBJ_CPU= \
 	 map.o \
 	 $(NULL)
 
-VPATH=src:src/cpu
+OBJ_GPU= \
+         gol-gpu.o \
+         $(NULL)
+
+VPATH=src:src/cpu:src/gpu
 
 .PHONY: cpu-clean clean
 
-all: gol-cpu
+all: gol-cpu gol-gpu
 
 gol-cpu: $(OBJ_CPU)
 
 gol-cpu-parallel: $(OBJ_CPU)
 
+%.o: %.cu
+	$(NVCC) -c -o $@ $^
+
+gol-gpu: $(OBJ_GPU)
+	$(NVCC) -o $@ $^ $(LDFLAGS)
+
 cpu-clean:
 	$(RM) gol-cpu.o gol-cpu-parallel.o $(OBJ_CPU)
 	$(RM) gol-cpu gol-cpu-parallel
 
-clean: cpu-clean
+gpu-clean:
+	$(RM) gol-gpu $(OBJ_GPU)
+
+clean: cpu-clean gpu-clean
