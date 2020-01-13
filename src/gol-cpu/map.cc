@@ -2,18 +2,26 @@
 
 #include <ctime>
 #include <fstream>
+#include <iostream>
 #include <ncurses.h>
 #include <stdexcept>
 #include <string>
 #include <tbb/parallel_for.h>
 #include <thread>
 
+void error_callback(int error, const char* description)
+{
+    std::cerr << "Error " << error << ": " << description << '\n';
+}
+
 Map::Map(const std::string& path)
     : height_{16}
     , width_{48}
     , map_(height_ * width_)
 {
-    initscr();
+    glfwSetErrorCallback(error_callback);
+    if (!glfwInit())
+        exit(1);
 
     std::ifstream in(path);
     if (!in.good())
@@ -49,7 +57,9 @@ Map::Map(size_t height, size_t width)
     , width_{width}
     , map_(height * width)
 {
-    initscr();
+    glfwSetErrorCallback(error_callback);
+    if (!glfwInit())
+        exit(1);
 
     std::srand(std::time(nullptr));
     for (size_t i = 0; i < height_ * width_; i++)
@@ -60,7 +70,8 @@ Map::Map(size_t height, size_t width)
 
 Map::~Map()
 {
-    endwin();
+    glfwDestroyWindow(window_);
+    glfwTerminate();
 }
 
 int Map::number_of_alive_neighbours(size_t j, size_t i) const
@@ -172,4 +183,18 @@ void Map::ascii_display() const
     waddch(stdscr, '\n');
 
     wrefresh(stdscr);
+}
+
+void Map::gl_display()
+{
+    if (window_ == nullptr)
+    {
+        window_ = glfwCreateWindow(width_, height_, "Game of Life", NULL, NULL);
+        if (!window_)
+        {
+            glfwTerminate();
+            exit(1);
+        }
+        glfwMakeContextCurrent(window_);
+    }
 }

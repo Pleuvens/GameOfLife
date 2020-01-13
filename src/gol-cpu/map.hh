@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GLFW/glfw3.h>
 #include <string>
 #include <vector>
 
@@ -23,6 +24,7 @@ public:
     ~Map();
 
     void ascii_display() const;
+    void gl_display();
 
     int number_of_alive_neighbours(size_t j, size_t i) const;
 
@@ -34,6 +36,7 @@ private:
     size_t height_ = 0;
     size_t width_ = 0;
     size_t generation_ = 0;
+    GLFWwindow* window_ = nullptr;
 
     std::vector<Cell> map_;
 };
