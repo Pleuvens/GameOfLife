@@ -189,7 +189,10 @@ void Map::gl_display()
 {
     if (window_ == nullptr)
     {
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+        glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+        glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
         window_ = glfwCreateWindow(width_, height_, "Game of Life", NULL, NULL);
         if (!window_)
         {
