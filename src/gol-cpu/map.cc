@@ -189,6 +189,7 @@ void Map::gl_display()
 {
     if (window_ == nullptr)
     {
+        glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
         window_ = glfwCreateWindow(width_, height_, "Game of Life", NULL, NULL);
         if (!window_)
         {
@@ -197,4 +198,23 @@ void Map::gl_display()
         }
         glfwMakeContextCurrent(window_);
     }
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glLoadIdentity();
+    glOrtho(0, width_, height_, 0, 0, 1);
+    glBegin(GL_LINES);
+    for (size_t y = 0; y < height_; y++)
+    {
+        for (size_t x = 0; x < width_; x++)
+        {
+            if (map_[y * width_ + x] == Cell::alive)
+            {
+                glColor3f(1.0f, 1.0f, 1.0f);
+                glVertex2f(x, y);
+                glVertex2f(x + 1, y);
+            }
+        } 
+    }
+    glEnd();
+    glfwSwapBuffers(window_);
 }

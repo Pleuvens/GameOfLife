@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 {
     signal(SIGINT, sig_handler);
 
-    Map m(20, 20);
+    Map m(720, 1280);
 
     if (argc == 2)
         m = Map(argv[1]);
