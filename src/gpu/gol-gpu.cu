@@ -38,29 +38,47 @@ void compute_iteration(char* buffer, char* out_buffer, size_t pitch,
                                                  && n_alive == 2);
 }
 
-void display(char *dev_buffer, size_t pitch, int width, int height)
+void display(char *dev_buffer, size_t pitch, int width, int height,
+             int generation)
 {
-    auto map = new char[width * height];
-
-    if (cudaMemcpy2D(map, width * sizeof(char), dev_buffer, pitch,
+    auto buf = new char[width * height];
+    if (cudaMemcpy2D(buf, width * sizeof(char), dev_buffer, pitch,
                      width * sizeof(char), height, cudaMemcpyDeviceToHost))
         abortError("Fail memcpy device to host");
 
     wmove(stdscr, 0, 0);
-    for (size_t y = 0; y < height; ++y)
+    wprintw(stdscr, "Generation %d:\n", generation);
+
+    for (size_t j = 0; j < height; j++)
     {
-        for (size_t x = 0; x < width; ++x)
+        for (size_t i = 0; i < width; i++)
         {
-            if (map[y * width + x])
-                waddch(stdscr, '.');
+            waddch(stdscr, '=');
+            waddch(stdscr, '=');
+        }
+        waddch(stdscr, '\n');
+
+        waddch(stdscr, '|');
+        for (size_t i = 0; i < width; i++)
+        {
+            if (buf[j * width + i] == 0)
+                waddch(stdscr, ' ');
             else
-                waddch(stdscr, 'x');
+                waddch(stdscr, 'O');
+            waddch(stdscr, '|');
         }
         waddch(stdscr, '\n');
     }
-    wrefresh(stdscr);
 
-    delete map;
+    for (size_t i = 0; i < width; i++)
+    {
+        waddch(stdscr, '=');
+        waddch(stdscr, '=');
+    }
+    waddch(stdscr, '\n');
+
+    wrefresh(stdscr);
+    delete buf;
 }
 
 void run_compute_iteration(char* dev_buffer, char* out_dev_buffer,
@@ -79,8 +97,8 @@ void run_compute_iteration(char* dev_buffer, char* out_dev_buffer,
         compute_iteration<<<dimGrid, dimBlock>>>(
                 dev_buffer, out_dev_buffer, pitch, pitch_out, width, height);
         std::swap(dev_buffer, out_dev_buffer);
-        display(dev_buffer, pitch, width, height);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        display(dev_buffer, pitch, width, height, i);
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 
     if (cudaPeekAtLastError())
@@ -132,9 +150,7 @@ void init_random_game(char *dev_buffer, size_t pitch, int width, int height)
 
     std::srand(std::time(nullptr));
     for (size_t i = 0; i < height * width; i++)
-    {
         buf[i] = std::rand() / ((RAND_MAX + 1u) / 2);
-    }
 
     if (cudaMemcpy2D(dev_buffer, pitch, buf, width * sizeof(char),
                      width * sizeof(char), height, cudaMemcpyHostToDevice))
@@ -144,9 +160,7 @@ void init_random_game(char *dev_buffer, size_t pitch, int width, int height)
 
 int main(int argc, char *argv[])
 {
-    //constexpr int width = 1024;
-    //constexpr int height = 768;
-    constexpr int width = 20;
+    constexpr int width = 50;
     constexpr int height = 20;
 
     cudaError_t rc = cudaSuccess;
