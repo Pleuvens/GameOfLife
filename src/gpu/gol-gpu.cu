@@ -1,7 +1,8 @@
 #include <chrono>
-#include <thread>
+#include <fstream>
 #include <iostream>
 #include <ncurses.h>
+#include <thread>
 
 __attribute__((noinline))
 void _abortError(const char* msg, const char* fname, int line)
@@ -40,10 +41,10 @@ void compute_iteration(char* buffer, char* out_buffer, size_t pitch,
 void display(char *dev_buffer, size_t pitch, int width, int height)
 {
     auto map = new char[width * height];
-    size_t pitch2 = width * sizeof(char);
 
-    cudaMemcpy2D(map, pitch2, dev_buffer, pitch, width, height,
-               cudaMemcpyDeviceToHost);
+    if (cudaMemcpy2D(map, width * sizeof(char), dev_buffer, pitch,
+                     width * sizeof(char), height, cudaMemcpyDeviceToHost))
+        abortError("Fail memcpy device to host");
 
     wmove(stdscr, 0, 0);
     for (size_t y = 0; y < height; ++y)
@@ -73,21 +74,6 @@ void run_compute_iteration(char* dev_buffer, char* out_dev_buffer,
     dim3 dimGrid(w, h);
     dim3 dimBlock(block_size, block_size);
 
-    auto map = new char[width * height];
-    memset(map, 0, width * height);
-    size_t pitch2 = width * sizeof(char);
-    // Glider hardcoded
-    map[1 * height + 2] = 1;
-    map[2 * height + 3] = 1;
-    map[3 * height + 1] = 1;
-    map[3 * height + 2] = 1;
-    map[3 * height + 3] = 1;
-
-    cudaMemcpy2D(dev_buffer, pitch, map, pitch2, width * sizeof(char), height,
-                 cudaMemcpyHostToDevice);
-    delete map;
-
-
     for (int i = 0; i < n_iterations; ++i)
     {
         compute_iteration<<<dimGrid, dimBlock>>>(
@@ -101,14 +87,67 @@ void run_compute_iteration(char* dev_buffer, char* out_dev_buffer,
         abortError("Computation error");
 }
 
+void parse_plaintext(const std::string& path, char *dev_buffer, size_t pitch,
+                     int width, int height)
+{
+    std::ifstream in(path);
+    if (!in.good())
+        throw std::invalid_argument("file not found");
+
+    auto buf = new char[width * height];
+    memset(buf, 0, width * height);
+    std::string line;
+    size_t j = 0;
+
+    while (std::getline(in, line))
+    {
+        if (line[0] == '!')
+            continue;
+
+        for (size_t i = 0; i < line.length(); i++)
+        {
+            switch (line[i])
+            {
+            case '.':
+                break;
+            case 'O':
+                buf[j * width + i] = 1;
+                break;
+            default:
+                throw std::invalid_argument("invalid format");
+            }
+        }
+        ++j;
+    }
+
+    if (cudaMemcpy2D(dev_buffer, pitch, buf, width * sizeof(char),
+                     width * sizeof(char), height, cudaMemcpyHostToDevice))
+        abortError("Fail memcpy host to device");
+    delete buf;
+}
+
+void init_random_game(char *dev_buffer, size_t pitch, int width, int height)
+{
+    auto buf = new char[width * height];
+
+    std::srand(std::time(nullptr));
+    for (size_t i = 0; i < height * width; i++)
+    {
+        buf[i] = std::rand() / ((RAND_MAX + 1u) / 2);
+    }
+
+    if (cudaMemcpy2D(dev_buffer, pitch, buf, width * sizeof(char),
+                     width * sizeof(char), height, cudaMemcpyHostToDevice))
+        abortError("Fail memcpy host to device");
+    delete buf;
+}
+
 int main(int argc, char *argv[])
 {
-    // FIXME: Parse Game of life plaintext format file
-
     //constexpr int width = 1024;
     //constexpr int height = 768;
-    constexpr int width = 10;
-    constexpr int height = 10;
+    constexpr int width = 20;
+    constexpr int height = 20;
 
     cudaError_t rc = cudaSuccess;
 
@@ -131,10 +170,20 @@ int main(int argc, char *argv[])
     if (rc)
         abortError("Fail output buffer allocation");
 
-    initscr();
+    if (argc == 2)
+        parse_plaintext(argv[1], dev_buffer, pitch, width, height);
+    else if (argc < 2)
+        init_random_game(dev_buffer, pitch, width, height);
+    else
+    {
+        std::cerr << "Too many arguments\n";
+        return 1;
+    }
 
+    initscr();
     run_compute_iteration(dev_buffer, out_dev_buffer, pitch, pitch_out, width,
                           height);
+    endwin();
 
     rc = cudaFree(dev_buffer);
     if (rc)
@@ -143,8 +192,6 @@ int main(int argc, char *argv[])
     rc = cudaFree(out_dev_buffer);
     if (rc)
         abortError("Unable to free output buffer");
-
-    endwin();
 
     return 0;
 }
