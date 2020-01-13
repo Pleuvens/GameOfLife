@@ -1,16 +1,39 @@
+NULL=
+
 CC=g++
-CXXFLAGS= -g -Wall -Wextra -Werror -pedantic -std=c++17
-LDFLAGS= -lncurses -lpthread
-CPUOBJ= map.o
 
-VPATH=src/
+CXXFLAGS= \
+	  -Wall \
+	  -Wextra \
+	  -Werror \
+	  -pedantic \
+	  -std=c++17 \
+	  -g \
+	  -fsanitize=address \
+	  $(NULL)
 
-cpu: $(CPUOBJ) gol-cpu.o
-	$(CC) $(CXXFLAGS) $(CPUOBJ) gol-cpu.o -o gol-cpu $(LDFLAGS)
+LDFLAGS= \
+	 -lncurses \
+	 -lpthread \
+	 -fsanitize=address \
+	 $(NULL)
 
-cpu-parallel: $(CPUOBJ) gol-cpu-parallel.o
-	$(CC) $(CXXFLAGS) $(CPUOBJ) gol-cpu-parallel.o -o gol-cpu-parallel $(LDFLAGS)
+OBJ_CPU= \
+	 map.o \
+	 $(NULL)
 
+VPATH=src:src/cpu
+
+.PHONY: cpu-clean clean
+
+all: gol-cpu
+
+gol-cpu: $(OBJ_CPU)
+
+gol-cpu-parallel: $(OBJ_CPU)
 
 cpu-clean:
-	$(RM) gol-cpu $(CPUOBJ)
+	$(RM) gol-cpu.o gol-cpu-parallel.o $(OBJ_CPU)
+	$(RM) gol-cpu gol-cpu-parallel
+
+clean: cpu-clean
