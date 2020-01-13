@@ -26,6 +26,8 @@ public:
 
     void ascii_display() const;
     void gl_display();
+    inline int window_should_close() const 
+    { return window_ ? glfwWindowShouldClose(window_) : 0; }
 
     int number_of_alive_neighbours(size_t j, size_t i) const;
 

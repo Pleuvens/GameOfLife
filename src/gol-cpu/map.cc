@@ -14,6 +14,14 @@ void error_callback(int error, const char* description)
     std::cerr << "Error " << error << ": " << description << '\n';
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    (void)scancode;
+    (void)mods;
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
 Map::Map(const std::string& path)
     : height_{16}
     , width_{48}
@@ -189,12 +197,14 @@ void Map::gl_display()
         glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
         glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
         glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
-        window_ = glfwCreateWindow(width_, height_, "Game of Life", NULL, NULL);
+        window_ = glfwCreateWindow(width_, height_, "Game of Life", 
+                glfwGetPrimaryMonitor(), NULL);
         if (!window_)
         {
             glfwTerminate();
             exit(1);
         }
+        glfwSetKeyCallback(window_, key_callback);
         glfwMakeContextCurrent(window_);
     }
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -216,4 +226,5 @@ void Map::gl_display()
     }
     glEnd();
     glfwSwapBuffers(window_);
+    glfwPollEvents();
 }

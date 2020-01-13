@@ -1,5 +1,6 @@
 #include <chrono>
 #include <csignal>
+#include <iostream>
 #include <thread>
 
 #include "map.hh"
@@ -27,7 +28,7 @@ int main(int argc, char* argv[])
         m = Map(720, 1280);
     }
 
-    while (running)
+    while (running && !m.window_should_close())
     {
         m.basic_cpu_compute();
         m.gl_display();
