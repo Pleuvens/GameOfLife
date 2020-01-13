@@ -16,6 +16,7 @@ public:
     explicit Map(const std::string& path);
     Map(size_t height, size_t width);
 
+    Map() = default;
     Map(const Map&) = default;
     Map& operator=(const Map&) = default;
     Map(Map&&) = default;

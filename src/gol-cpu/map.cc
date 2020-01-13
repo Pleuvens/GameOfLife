@@ -18,11 +18,7 @@ Map::Map(const std::string& path)
     : height_{16}
     , width_{48}
     , map_(height_ * width_)
-{
-    glfwSetErrorCallback(error_callback);
-    if (!glfwInit())
-        exit(1);
-
+{ 
     std::ifstream in(path);
     if (!in.good())
         throw std::invalid_argument("file not found");
@@ -57,10 +53,6 @@ Map::Map(size_t height, size_t width)
     , width_{width}
     , map_(height * width)
 {
-    glfwSetErrorCallback(error_callback);
-    if (!glfwInit())
-        exit(1);
-
     std::srand(std::time(nullptr));
     for (size_t i = 0; i < height_ * width_; i++)
     {
@@ -70,7 +62,8 @@ Map::Map(size_t height, size_t width)
 
 Map::~Map()
 {
-    glfwDestroyWindow(window_);
+    if (window_)
+        glfwDestroyWindow(window_);
     glfwTerminate();
 }
 
@@ -189,6 +182,9 @@ void Map::gl_display()
 {
     if (window_ == nullptr)
     {
+        glfwSetErrorCallback(error_callback);
+        if (!glfwInit())
+            exit(1);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
         glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);

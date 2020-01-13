@@ -18,10 +18,14 @@ int main(int argc, char* argv[])
 {
     signal(SIGINT, sig_handler);
 
-    Map m(720, 1280);
+    Map m;
 
     if (argc == 2)
+    {
         m = Map(argv[1]);
+    } else {
+        m = Map(720, 1280);
+    }
 
     while (running)
     {
