@@ -32,9 +32,9 @@ int main(int argc, char* argv[])
     {
         m.basic_cpu_compute();
         m.gl_display();
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
+
+    m.gl_destroy();
 
     return 0;
 }

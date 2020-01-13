@@ -22,9 +22,12 @@ public:
     Map(Map&&) = default;
     Map& operator=(Map&&) = default;
 
-    ~Map();
+    ~Map() = default;
 
     void ascii_display() const;
+    
+    void gl_init();
+    void gl_destroy();
     void gl_display();
     inline int window_should_close() const 
     { return window_ ? glfwWindowShouldClose(window_) : 0; }
@@ -36,6 +39,9 @@ public:
     void parallel_cpu_compute();
 
 private:
+
+    void gl_draw_square() const
+
     size_t height_ = 0;
     size_t width_ = 0;
     size_t generation_ = 0;
