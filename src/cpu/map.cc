@@ -1,8 +1,47 @@
 #include "map.hh"
 
 #include <ctime>
+#include <fstream>
 #include <ncurses.h>
+#include <stdexcept>
+#include <string>
 #include <thread>
+
+Map::Map(const std::string& path)
+    : height_{20}
+    , width_{50}
+    , map_(height_ * width_)
+{
+    initscr();
+
+    std::ifstream in(path);
+    if (!in.good())
+        throw std::invalid_argument("file not found");
+
+    std::string line;
+    size_t j = 0;
+    while (std::getline(in, line))
+    {
+        if (line[0] == '!')
+            continue;
+
+        for (size_t i = 0; i < line.length(); i++)
+        {
+            switch (line[i])
+            {
+            case '.':
+                map_[j * width_ + i] = Cell::dead;
+                break;
+            case 'O':
+                map_[j * width_ + i] = Cell::alive;
+                break;
+            default:
+                throw std::invalid_argument("invalid format");
+            }
+        }
+        ++j;
+    }
+}
 
 Map::Map(size_t height, size_t width)
     : height_{height}
@@ -25,25 +64,27 @@ Map::~Map()
 
 int Map::number_of_alive_neighbours(size_t j, size_t i) const
 {
-    int nb = 0;
+    size_t up_j = (j - 1 + height_) % height_;
+    size_t down_j = (j + 1) % height_;
+    size_t left_i = (i - 1 + width_) % width_;
+    size_t right_i = (i + 1) % width_;
 
-    for (size_t y = j - 1; y < j + 2; y++)
-    {
-        for (size_t x = i - 1; x < i + 2; x++)
-        {
-            if (is_valid_coord(y, x) && y != j && x != i)
-            {
-                if (map_[y * width_ + x] == Cell::alive)
-                    ++nb;
-            }
-        }
-    }
+    int nb = map_[up_j * width_ + left_i] == Cell::alive;
+    nb += map_[up_j * width_ + i] == Cell::alive;
+    nb += map_[up_j * width_ + right_i] == Cell::alive;
+    nb += map_[j * width_ + left_i] == Cell::alive;
+    nb += map_[j * width_ + right_i] == Cell::alive;
+    nb += map_[down_j * width_ + left_i] == Cell::alive;
+    nb += map_[down_j * width_ + i] == Cell::alive;
+    nb += map_[down_j * width_ + right_i] == Cell::alive;
 
     return nb;
 }
 
 void Map::basic_cpu_compute()
 {
+    auto map = map_;
+
     for (size_t j = 0; j < height_; j++)
     {
         for (size_t i = 0; i < width_; i++)
@@ -52,16 +93,17 @@ void Map::basic_cpu_compute()
             if (map_[j * width_ + i] == Cell::alive)
             {
                 if (nb_alive_neighbours != 2 && nb_alive_neighbours != 3)
-                    map_[j * width_ + i] = Cell::dead;
+                    map[j * width_ + i] = Cell::dead;
             }
             else
             {
                 if (nb_alive_neighbours == 3)
-                    map_[j * width_ + i] = Cell::alive;
+                    map[j * width_ + i] = Cell::alive;
             }
         }
     }
 
+    map_ = map;
     generation_++;
 }
 
@@ -117,17 +159,33 @@ void Map::ascii_display() const
     {
         for (size_t i = 0; i < width_; i++)
         {
+            waddch(stdscr, '=');
+            waddch(stdscr, '=');
+        }
+        waddch(stdscr, '\n');
+
+        waddch(stdscr, '|');
+        for (size_t i = 0; i < width_; i++)
+        {
             if (map_[j * width_ + i] == Cell::alive)
             {
-                waddch(stdscr, '.');
+                waddch(stdscr, 'O');
             }
             else
             {
                 waddch(stdscr, ' ');
             }
+            waddch(stdscr, '|');
         }
         waddch(stdscr, '\n');
     }
+
+    for (size_t i = 0; i < width_; i++)
+    {
+        waddch(stdscr, '=');
+        waddch(stdscr, '=');
+    }
+    waddch(stdscr, '\n');
 
     wrefresh(stdscr);
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 enum class Cell
@@ -11,12 +12,13 @@ enum class Cell
 class Map
 {
 public:
+    explicit Map(const std::string& path);
     Map(size_t height, size_t width);
 
-    Map(const Map&) = delete;
-    Map& operator=(const Map&) = delete;
-    Map(Map&&) = delete;
-    Map& operator=(Map&&) = delete;
+    Map(const Map&) = default;
+    Map& operator=(const Map&) = default;
+    Map(Map&&) = default;
+    Map& operator=(Map&&) = default;
 
     ~Map();
 
@@ -35,8 +37,8 @@ public:
                                    size_t xmax);
 
 private:
-    size_t height_;
-    size_t width_;
+    size_t height_ = 0;
+    size_t width_ = 0;
     size_t generation_ = 0;
 
     std::vector<Cell> map_;
