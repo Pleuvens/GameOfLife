@@ -81,13 +81,13 @@ int Map::number_of_alive_neighbours(size_t j, size_t i) const
     return nb;
 }
 
-void Map::basic_cpu_compute()
+void Map::compute_task(size_t ymin, size_t ymax, size_t xmin, size_t xmax)
 {
     auto map = map_;
 
-    for (size_t j = 0; j < height_; j++)
+    for (size_t j = ymin; j < ymax; j++)
     {
-        for (size_t i = 0; i < width_; i++)
+        for (size_t i = xmin; i < xmax; i++)
         {
             auto nb_alive_neighbours = number_of_alive_neighbours(j, i);
             if (map_[j * width_ + i] == Cell::alive)
@@ -103,7 +103,16 @@ void Map::basic_cpu_compute()
         }
     }
 
+    for (size_t j = ymin; j < ymax; j++)
+        for (size_t i = xmin; i < xmax; i++)
+            map_[j * ymax + i] = map[j * ymax + i];
+
     map_ = map;
+}
+
+void Map::basic_cpu_compute()
+{
+    compute_task(0, height_, 0, width_);
     generation_++;
 }
 
@@ -115,7 +124,7 @@ void Map::parallel_cpu_compute()
     for (size_t i = 0; i < nb_threads; i++)
     {
         tasks[i] = std::thread(
-            &Map::parallel_cpu_compute_task, this, i * (height_ / nb_threads),
+            &Map::compute_task, this, i * (height_ / nb_threads),
             (i + 1) * (height_ / nb_threads), i * (width_ / nb_threads),
             (i + 1) * (width_ / nb_threads));
     }
@@ -126,28 +135,6 @@ void Map::parallel_cpu_compute()
     }
 
     generation_++;
-}
-
-void Map::parallel_cpu_compute_task(size_t ymin, size_t ymax, size_t xmin,
-                                    size_t xmax)
-{
-    for (size_t j = ymin; j < ymax; j++)
-    {
-        for (size_t i = xmin; i < xmax; i++)
-        {
-            auto nb_alive_neighbours = number_of_alive_neighbours(j, i);
-            if (map_[j * width_ + i] == Cell::alive)
-            {
-                if (nb_alive_neighbours != 2 && nb_alive_neighbours != 3)
-                    map_[j * width_ + i] = Cell::dead;
-            }
-            else
-            {
-                if (nb_alive_neighbours == 3)
-                    map_[j * width_ + i] = Cell::alive;
-            }
-        }
-    }
 }
 
 void Map::ascii_display() const

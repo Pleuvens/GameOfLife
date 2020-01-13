@@ -14,11 +14,14 @@ void sig_handler(int)
     running = false;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
     signal(SIGINT, sig_handler);
 
-    Map m{20, 20};
+    Map m(20, 20);
+
+    if (argc == 2)
+        m = Map(argv[1]);
 
     while (running)
     {
