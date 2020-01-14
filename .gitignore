@@ -1,3 +1,7 @@
 *.o
 gol-cpu
 gol-cpu-parallel
+gol-gpu
+
+build/
+_build/
