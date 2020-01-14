@@ -96,11 +96,8 @@ std::vector<uint8_t> Map::compute_task(size_t ymin, size_t ymax)
                 if (nb_alive_neighbours != 2 && nb_alive_neighbours != 3)
                     map[(j - ymin) * WIDTH_ + i / 8] &= ~(BIT8 >> i % 8);
             }
-            else
-            {
-                if (nb_alive_neighbours == 3)
-                    map[(j - ymin) * WIDTH_ + i / 8] |= BIT8 >> i % 8;
-            }
+            else if (nb_alive_neighbours == 3)
+                map[(j - ymin) * WIDTH_ + i / 8] |= BIT8 >> i % 8;
         }
     }
 
