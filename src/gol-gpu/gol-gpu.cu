@@ -3,8 +3,8 @@
 #include <ncurses.h>
 #include <thread>
 
-__attribute__((noinline)) void _abortError(const char* msg, const char* fname,
-                                           int line)
+__attribute__((noinline))
+static void _abortError(const char* msg, const char* fname, int line)
 {
     cudaError_t err = cudaGetLastError();
     std::clog << fname << ": "
@@ -96,8 +96,8 @@ static void run_compute_iteration(char* dev_buffer, char* out_dev_buffer,
         compute_iteration<<<dimGrid, dimBlock>>>(
             dev_buffer, out_dev_buffer, pitch, pitch_out, width, height);
         std::swap(dev_buffer, out_dev_buffer);
-        display(dev_buffer, pitch, width, height, i);
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        //display(dev_buffer, pitch, width, height, i);
+        //std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 
     if (cudaPeekAtLastError())

@@ -6,8 +6,8 @@
 #define WIDTH (width / 8)
 #define BIT8 (1 << 7)
 
-__attribute__((noinline)) void _abortError(const char* msg, const char* fname,
-                                           int line)
+__attribute__((noinline))
+static void _abortError(const char* msg, const char* fname, int line)
 {
     cudaError_t err = cudaGetLastError();
     std::clog << fname << ": "
@@ -111,8 +111,8 @@ void run_compute_iteration(uint8_t* dev_buffer, uint8_t* out_dev_buffer,
         compute_iteration<<<dimGrid, dimBlock>>>(
             dev_buffer, out_dev_buffer, pitch, pitch_out, width, height);
         std::swap(dev_buffer, out_dev_buffer);
-        display(dev_buffer, pitch, width, height, i);
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        //display(dev_buffer, pitch, width, height, i);
+        //std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 
     if (cudaPeekAtLastError())

@@ -1,4 +1,5 @@
 add_library(libbit-cpu
+    bit-cpu.cc
     map.cc
     map.hh
 )
@@ -21,7 +22,7 @@ target_link_libraries(libbit-cpu PRIVATE
 )
 
 add_executable(bit-cpu
-    bit-cpu.cc
+    main.cc
 )
 
 set_target_properties(bit-cpu PROPERTIES

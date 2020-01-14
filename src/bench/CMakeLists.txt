@@ -21,5 +21,7 @@ target_compile_options(bench PRIVATE
 target_link_libraries(bench PRIVATE
    libgol-gpu
    libgol-cpu
+   libbit-gpu
+   libbit-cpu
    benchmark
 )
