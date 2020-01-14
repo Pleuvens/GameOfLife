@@ -3,11 +3,12 @@
 #include <ncurses.h>
 #include <thread>
 
-__attribute__((noinline))
-static void _abortError(const char* msg, const char* fname, int line)
+__attribute__((noinline)) void _abortError(const char* msg, const char* fname,
+                                           int line)
 {
     cudaError_t err = cudaGetLastError();
-    std::clog << fname << ": " << "line: " << line << ": " << msg << '\n';
+    std::clog << fname << ": "
+              << "line: " << line << ": " << msg << '\n';
     std::clog << "Error " << cudaGetErrorName(err) << ": "
               << cudaGetErrorString(err) << '\n';
     std::exit(1);
@@ -15,9 +16,8 @@ static void _abortError(const char* msg, const char* fname, int line)
 
 #define abortError(msg) _abortError(msg, __FUNCTION__, __LINE__)
 
-__global__
-void compute_iteration(char* buffer, char* out_buffer, size_t pitch,
-                       size_t pitch_out, int width, int height)
+__global__ void compute_iteration(char* buffer, char* out_buffer, size_t pitch,
+                                  size_t pitch_out, int width, int height)
 {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
     const int y = blockDim.y * blockIdx.y + threadIdx.y;
@@ -28,16 +28,16 @@ void compute_iteration(char* buffer, char* out_buffer, size_t pitch,
     int right_x = (x + 1) % width;
     int up_y = (y - 1 + height) % height;
     int down_y = (y + 1) % height;
-    char n_alive = buffer[up_y * pitch + left_x] + buffer[up_y * pitch + x] +
-        buffer[up_y * pitch + right_x] + buffer[y * pitch + left_x] +
-        buffer[y * pitch + right_x] + buffer[down_y * pitch + left_x] +
-        buffer[down_y * pitch + x] + buffer[down_y * pitch + right_x];
+    char n_alive = buffer[up_y * pitch + left_x] + buffer[up_y * pitch + x]
+        + buffer[up_y * pitch + right_x] + buffer[y * pitch + left_x]
+        + buffer[y * pitch + right_x] + buffer[down_y * pitch + left_x]
+        + buffer[down_y * pitch + x] + buffer[down_y * pitch + right_x];
 
-    out_buffer[y * pitch + x] = n_alive == 3 || (buffer[y * pitch + x]
-                                                 && n_alive == 2);
+    out_buffer[y * pitch + x] =
+        n_alive == 3 || (buffer[y * pitch + x] && n_alive == 2);
 }
 
-static void display(char *dev_buffer, size_t pitch, int width, int height,
+static void display(char* dev_buffer, size_t pitch, int width, int height,
                     int generation)
 {
     auto buf = new char[width * height];
@@ -94,7 +94,7 @@ static void run_compute_iteration(char* dev_buffer, char* out_dev_buffer,
     for (int i = 0; i < n_iterations; ++i)
     {
         compute_iteration<<<dimGrid, dimBlock>>>(
-                dev_buffer, out_dev_buffer, pitch, pitch_out, width, height);
+            dev_buffer, out_dev_buffer, pitch, pitch_out, width, height);
         std::swap(dev_buffer, out_dev_buffer);
         //display(dev_buffer, pitch, width, height, i);
         //std::this_thread::sleep_for(std::chrono::milliseconds(200));

@@ -2,17 +2,18 @@
 #include <fstream>
 #include <iostream>
 #include <ncurses.h>
-#include <thread>
 #include <stdint.h>
+#include <thread>
 
 #define WIDTH (width / 8)
 #define BIT8 (1 << 7)
 
-__attribute__((noinline))
-void _abortError(const char* msg, const char* fname, int line)
+__attribute__((noinline)) void _abortError(const char* msg, const char* fname,
+                                           int line)
 {
     cudaError_t err = cudaGetLastError();
-    std::clog << fname << ": " << "line: " << line << ": " << msg << '\n';
+    std::clog << fname << ": "
+              << "line: " << line << ": " << msg << '\n';
     std::clog << "Error " << cudaGetErrorName(err) << ": "
               << cudaGetErrorString(err) << '\n';
     std::exit(1);
@@ -20,9 +21,9 @@ void _abortError(const char* msg, const char* fname, int line)
 
 #define abortError(msg) _abortError(msg, __FUNCTION__, __LINE__)
 
-__global__
-void compute_iteration(uint8_t* buffer, uint8_t* out_buffer, size_t pitch,
-                       size_t pitch_out, int width, int height)
+__global__ void compute_iteration(uint8_t* buffer, uint8_t* out_buffer,
+                                  size_t pitch, size_t pitch_out, int width,
+                                  int height)
 {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
     const int y = blockDim.y * blockIdx.y + threadIdx.y;
@@ -34,14 +35,15 @@ void compute_iteration(uint8_t* buffer, uint8_t* out_buffer, size_t pitch,
     int up_y = (y - 1 + height) % height;
     int down_y = (y + 1) % height;
 
-    int n_alive = buffer[up_y * pitch + left_x / 8] & BIT8 >> left_x % 8
-        + buffer[up_y * pitch + x / 8] & BIT8 >> x % 8
-        + buffer[up_y * pitch + right_x / 8] & BIT8 >> right_x % 8
-        + buffer[y * pitch + left_x / 8] & BIT8 >> left_x % 8
-        + buffer[y * pitch + right_x / 8] & BIT8 >> right_x % 8
-        + buffer[down_y * pitch + left_x / 8] & BIT8 >> left_x % 8
-        + buffer[down_y * pitch + x / 8] & BIT8 >> x % 8
-        + buffer[down_y * pitch + right_x / 8] & BIT8 >> right_x % 8;
+    int n_alive = buffer[up_y * pitch + left_x / 8]
+        & BIT8 >> left_x % 8 + buffer[up_y * pitch + x / 8]
+        & BIT8 >> x % 8 + buffer[up_y * pitch + right_x / 8]
+        & BIT8 >> right_x % 8 + buffer[y * pitch + left_x / 8]
+        & BIT8 >> left_x % 8 + buffer[y * pitch + right_x / 8]
+        & BIT8 >> right_x % 8 + buffer[down_y * pitch + left_x / 8]
+        & BIT8 >> left_x % 8 + buffer[down_y * pitch + x / 8]
+        & BIT8 >> x % 8 + buffer[down_y * pitch + right_x / 8]
+        & BIT8 >> right_x % 8;
 
     if (n_alive == 3 || (buffer[y * pitch + x / 8] && n_alive == 2))
         out_buffer[y * pitch + x / 8] |= BIT8 >> x % 8;
@@ -49,7 +51,7 @@ void compute_iteration(uint8_t* buffer, uint8_t* out_buffer, size_t pitch,
         out_buffer[y * pitch + x / 8] &= ~(BIT8 >> x % 8);
 }
 
-void display(uint8_t *dev_buffer, size_t pitch, int width, int height,
+void display(uint8_t* dev_buffer, size_t pitch, int width, int height,
              int generation)
 {
     auto buf = new uint8_t[WIDTH * height];
@@ -106,7 +108,7 @@ void run_compute_iteration(uint8_t* dev_buffer, uint8_t* out_dev_buffer,
     for (int i = 0; i < n_iterations; ++i)
     {
         compute_iteration<<<dimGrid, dimBlock>>>(
-                dev_buffer, out_dev_buffer, pitch, pitch_out, width, height);
+            dev_buffer, out_dev_buffer, pitch, pitch_out, width, height);
         std::swap(dev_buffer, out_dev_buffer);
         display(dev_buffer, pitch, width, height, i);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -116,7 +118,7 @@ void run_compute_iteration(uint8_t* dev_buffer, uint8_t* out_dev_buffer,
         abortError("Computation error");
 }
 
-void parse_plaintext(const std::string& path, uint8_t *dev_buffer, size_t pitch,
+void parse_plaintext(const std::string& path, uint8_t* dev_buffer, size_t pitch,
                      int width, int height)
 {
     std::ifstream in(path);
@@ -156,7 +158,7 @@ void parse_plaintext(const std::string& path, uint8_t *dev_buffer, size_t pitch,
     delete buf;
 }
 
-void init_random_game(uint8_t *dev_buffer, size_t pitch, int width, int height)
+void init_random_game(uint8_t* dev_buffer, size_t pitch, int width, int height)
 {
     auto buf = new uint8_t[WIDTH * height];
 
@@ -170,7 +172,7 @@ void init_random_game(uint8_t *dev_buffer, size_t pitch, int width, int height)
     delete buf;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     constexpr int width = 50;
     constexpr int height = 20;
