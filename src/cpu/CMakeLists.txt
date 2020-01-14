@@ -5,16 +5,25 @@ add_library(libgol-cpu
     map.hh
 )
 
-add_executable(gol-cpu
-    main.cc
-    map.cc
-    map.hh
+set_target_properties(libgol-cpu PROPERTIES
+    CXX_STANDARD 17
+    CXX_EXTENSIONS OFF
 )
 
-add_executable(gol-cpu-parallel
-    gol-cpu-parallel.cc
-    map.cc
-    map.hh
+target_compile_options(libgol-cpu PRIVATE
+    "-Wall"
+    "-Wextra"
+    "-pedantic"
+)
+
+target_link_libraries(libgol-cpu PRIVATE
+    ncurses
+    pthread
+    tbb
+)
+
+add_executable(gol-cpu
+    main.cc
 )
 
 set_target_properties(gol-cpu PROPERTIES
@@ -30,9 +39,11 @@ target_compile_options(gol-cpu PRIVATE
 )
 
 target_link_libraries(gol-cpu PRIVATE
-    ncurses
-    pthread
-    tbb
+    libgol-cpu
+)
+
+add_executable(gol-cpu-parallel
+    gol-cpu-parallel.cc
 )
 
 set_target_properties(gol-cpu-parallel PROPERTIES
@@ -48,6 +59,5 @@ target_compile_options(gol-cpu-parallel PRIVATE
 )
 
 target_link_libraries(gol-cpu-parallel PRIVATE
-    ncurses
-    pthread
+    libgol-cpu
 )
