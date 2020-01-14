@@ -12,7 +12,6 @@ set_target_properties(libgol-gpu PROPERTIES
 )
 
 target_link_libraries(libgol-gpu PRIVATE
-    ncurses
     pthread
     glfw
     GL

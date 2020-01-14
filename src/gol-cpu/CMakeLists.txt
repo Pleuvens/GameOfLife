@@ -17,7 +17,6 @@ target_compile_options(libgol-cpu PRIVATE
 )
 
 target_link_libraries(libgol-cpu PRIVATE
-    ncurses
     pthread
     tbb
 )

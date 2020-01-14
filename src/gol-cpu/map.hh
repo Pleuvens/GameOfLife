@@ -24,8 +24,11 @@ public:
 
     ~Map() = default;
 
-    void ascii_display() const;
-    
+    bool is_valid_coord(size_t j, size_t i) const
+    {
+        return j < height_ && i < width_;
+    }
+ 
     void gl_init();
     void gl_destroy();
     void gl_display();

@@ -4,7 +4,6 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
-#include <ncurses.h>
 #include <stdexcept>
 #include <string>
 #include <tbb/parallel_for.h>
@@ -125,46 +124,6 @@ void Map::parallel_cpu_compute()
             map_[i * width_ + j] = maps[i][j];
 
     generation_++;
-}
-
-void Map::ascii_display() const
-{
-    wmove(stdscr, 0, 0);
-    wprintw(stdscr, "Generation %d:\n", generation_);
-
-    for (size_t j = 0; j < height_; j++)
-    {
-        for (size_t i = 0; i < width_; i++)
-        {
-            waddch(stdscr, '=');
-            waddch(stdscr, '=');
-        }
-        waddch(stdscr, '\n');
-
-        waddch(stdscr, '|');
-        for (size_t i = 0; i < width_; i++)
-        {
-            if (map_[j * width_ + i] == Cell::alive)
-            {
-                waddch(stdscr, 'O');
-            }
-            else
-            {
-                waddch(stdscr, ' ');
-            }
-            waddch(stdscr, '|');
-        }
-        waddch(stdscr, '\n');
-    }
-
-    for (size_t i = 0; i < width_; i++)
-    {
-        waddch(stdscr, '=');
-        waddch(stdscr, '=');
-    }
-    waddch(stdscr, '\n');
-
-    wrefresh(stdscr);
 }
 
 void Map::gl_init()
