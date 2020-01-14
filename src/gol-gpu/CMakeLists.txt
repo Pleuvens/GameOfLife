@@ -1,6 +1,5 @@
 add_library(libgol-gpu
     gol-gpu.cu
-    gol-gpu.hh
     ../gui/callbacks.cc
     ../gui/callbacks.hh
     ../gui/gui.cu
