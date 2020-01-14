@@ -1,6 +1,5 @@
 add_library(libgol-cpu
     gol-cpu.cc
-    gol-cpu.hh
     map.cc
     map.hh
 )
@@ -32,6 +31,10 @@ set_target_properties(gol-cpu PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
+target_include_directories(gol-cpu PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+)
+
 target_compile_options(gol-cpu PRIVATE
     "-Wall"
     "-Wextra"
@@ -50,6 +53,10 @@ set_target_properties(gol-cpu-parallel PROPERTIES
     CXX_STANDARD 17
     CXX_EXTENSIONS OFF
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+
+target_include_directories(gol-cpu-parallel PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
 )
 
 target_compile_options(gol-cpu-parallel PRIVATE

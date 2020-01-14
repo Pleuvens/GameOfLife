@@ -1,8 +1,6 @@
-#include <chrono>
-#include <fstream>
 #include <iostream>
 #include <ncurses.h>
-#include <stdint.h>
+#include <cstdint>
 #include <thread>
 
 #define WIDTH (width / 8)
@@ -118,65 +116,8 @@ void run_compute_iteration(uint8_t* dev_buffer, uint8_t* out_dev_buffer,
         abortError("Computation error");
 }
 
-void parse_plaintext(const std::string& path, uint8_t* dev_buffer, size_t pitch,
-                     int width, int height)
+void bit_gpu(uint8_t* buffer, int width, int height, int n_iterations)
 {
-    std::ifstream in(path);
-    if (!in.good())
-        throw std::invalid_argument("file not found");
-
-    auto buf = new uint8_t[WIDTH * height];
-    memset(buf, 0, WIDTH * height);
-    std::string line;
-    size_t j = 0;
-
-    while (std::getline(in, line))
-    {
-        if (line[0] == '!')
-            continue;
-
-        for (size_t i = 0; i < line.length(); i++)
-        {
-            switch (line[i])
-            {
-            case '.':
-                buf[j * WIDTH + i / 8] &= ~(BIT8 >> i % 8);
-                break;
-            case 'O':
-                buf[j * WIDTH + i / 8] |= BIT8 >> i % 8;
-                break;
-            default:
-                throw std::invalid_argument("invalid format");
-            }
-        }
-        ++j;
-    }
-
-    if (cudaMemcpy2D(dev_buffer, pitch, buf, WIDTH * sizeof(uint8_t),
-                     WIDTH * sizeof(uint8_t), height, cudaMemcpyHostToDevice))
-        abortError("Fail memcpy host to device");
-    delete buf;
-}
-
-void init_random_game(uint8_t* dev_buffer, size_t pitch, int width, int height)
-{
-    auto buf = new uint8_t[WIDTH * height];
-
-    std::srand(std::time(nullptr));
-    for (size_t i = 0; i < height * WIDTH; i++)
-        buf[i] = std::rand() % 256;
-
-    if (cudaMemcpy2D(dev_buffer, pitch, buf, WIDTH * sizeof(uint8_t),
-                     width * sizeof(uint8_t), height, cudaMemcpyHostToDevice))
-        abortError("Fail memcpy host to device");
-    delete buf;
-}
-
-int main(int argc, char* argv[])
-{
-    constexpr int width = 50;
-    constexpr int height = 20;
-
     cudaError_t rc = cudaSuccess;
 
     // Allocate device memory
@@ -198,16 +139,6 @@ int main(int argc, char* argv[])
     if (rc)
         abortError("Fail output buffer allocation");
 
-    if (argc == 2)
-        parse_plaintext(argv[1], dev_buffer, pitch, width, height);
-    else if (argc < 2)
-        init_random_game(dev_buffer, pitch, width, height);
-    else
-    {
-        std::cerr << "Too many arguments\n";
-        return 1;
-    }
-
     initscr();
     run_compute_iteration(dev_buffer, out_dev_buffer, pitch, pitch_out, width,
                           height);
@@ -220,6 +151,4 @@ int main(int argc, char* argv[])
     rc = cudaFree(out_dev_buffer);
     if (rc)
         abortError("Unable to free output buffer");
-
-    return 0;
 }

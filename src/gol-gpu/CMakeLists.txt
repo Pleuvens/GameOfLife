@@ -1,6 +1,5 @@
 add_library(libgol-gpu
     gol-gpu.cu
-    gol-gpu.hh
 )
 
 set_target_properties(libgol-gpu PROPERTIES
@@ -20,6 +19,10 @@ set_target_properties(gol-gpu PROPERTIES
     CXX_STANDARD 17
     CXX_EXTENSIONS OFF
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+
+target_include_directories(gol-gpu PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
 )
 
 target_compile_options(gol-gpu PRIVATE
