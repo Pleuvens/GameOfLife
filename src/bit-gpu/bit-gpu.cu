@@ -28,25 +28,28 @@ __global__ void compute_iteration(uint8_t* buffer, uint8_t* out_buffer,
     if (x >= width || y >= height)
         return;
 
-    int left_x = (x - 1 + width) % width;
-    int right_x = (x + 1) % width;
     int up_y = (y - 1 + height) % height;
     int down_y = (y + 1) % height;
+    for (int real_x = x * 8; real_x < x * 8 + 8; ++real_x)
+    {
+        int left_x = (real_x - 1 + width) % width;
+        int right_x = (real_x + 1) % width;
 
-    int n_alive = buffer[up_y * pitch + left_x / 8]
-        & BIT8 >> left_x % 8 + buffer[up_y * pitch + x / 8]
-        & BIT8 >> x % 8 + buffer[up_y * pitch + right_x / 8]
-        & BIT8 >> right_x % 8 + buffer[y * pitch + left_x / 8]
-        & BIT8 >> left_x % 8 + buffer[y * pitch + right_x / 8]
-        & BIT8 >> right_x % 8 + buffer[down_y * pitch + left_x / 8]
-        & BIT8 >> left_x % 8 + buffer[down_y * pitch + x / 8]
-        & BIT8 >> x % 8 + buffer[down_y * pitch + right_x / 8]
-        & BIT8 >> right_x % 8;
+        int n_alive = ((buffer[up_y * pitch + left_x / 8] & BIT8 >> left_x % 8) != 0)
+            + ((buffer[up_y * pitch + real_x / 8] & BIT8 >> real_x % 8) != 0)
+            + ((buffer[up_y * pitch + right_x / 8] & BIT8 >> right_x % 8) != 0)
+            + ((buffer[y * pitch + left_x / 8] & BIT8 >> left_x % 8) != 0)
+            + ((buffer[y * pitch + right_x / 8] & BIT8 >> right_x % 8) != 0)
+            + ((buffer[down_y * pitch + left_x / 8] & BIT8 >> left_x % 8) != 0)
+            + ((buffer[down_y * pitch + real_x / 8] & BIT8 >> real_x % 8) != 0)
+            + ((buffer[down_y * pitch + right_x / 8] & BIT8 >> right_x % 8) != 0);
 
-    if (n_alive == 3 || (buffer[y * pitch + x / 8] && n_alive == 2))
-        out_buffer[y * pitch + x / 8] |= BIT8 >> x % 8;
-    else
-        out_buffer[y * pitch + x / 8] &= ~(BIT8 >> x % 8);
+        if (n_alive == 3
+            || (buffer[y * pitch + real_x / 8] && n_alive == 2))
+            out_buffer[y * pitch + real_x / 8] |= BIT8 >> real_x % 8;
+        else
+            out_buffer[y * pitch + real_x / 8] &= ~(BIT8 >> real_x % 8);
+    }
 }
 
 void display(uint8_t* dev_buffer, size_t pitch, int width, int height,
@@ -97,7 +100,7 @@ void run_compute_iteration(uint8_t* dev_buffer, uint8_t* out_dev_buffer,
                            int height, int n_iterations = 1000)
 {
     constexpr int block_size = 32;
-    int w = std::ceil(1.f * width / block_size);
+    int w = std::ceil(1.f * WIDTH / block_size);
     int h = std::ceil(1.f * height / block_size);
 
     dim3 dimGrid(w, h);
@@ -130,14 +133,14 @@ void bit_gpu(uint8_t* buffer, int width, int height, int n_iterations)
     if (rc)
         abortError("Fail buffer allocation");
 
-    rc = cudaMemset2D(dev_buffer, pitch, 0, WIDTH, height);
-    if (rc)
-        abortError("Fail buffer memset");
-
     rc = cudaMallocPitch(&out_dev_buffer, &pitch_out, WIDTH * sizeof(uint8_t),
                          height);
     if (rc)
         abortError("Fail output buffer allocation");
+
+    if (cudaMemcpy2D(dev_buffer, pitch, buffer, WIDTH * sizeof(uint8_t),
+                     WIDTH * sizeof(uint8_t), height, cudaMemcpyHostToDevice))
+        abortError("Fail memcpy host to device");
 
     initscr();
     run_compute_iteration(dev_buffer, out_dev_buffer, pitch, pitch_out, width,
