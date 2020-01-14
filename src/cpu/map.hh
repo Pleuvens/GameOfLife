@@ -31,7 +31,7 @@ public:
 
     int number_of_alive_neighbours(size_t j, size_t i) const;
 
-    void compute_task(size_t ymin, size_t ymax, size_t xmin, size_t xmax);
+    std::vector<Cell> compute_task(size_t ymin, size_t ymax);
     void basic_cpu_compute();
     void parallel_cpu_compute();
 

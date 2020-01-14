@@ -15,6 +15,8 @@ CXXFLAGS= \
 LDFLAGS= \
 	 -lncurses \
 	 -lpthread \
+	 -ltbb \
+	 -fsanitize=address \
 	 $(NULL)
 
 OBJ_CPU= \
@@ -29,7 +31,7 @@ VPATH=src:src/cpu:src/gpu
 
 .PHONY: cpu-clean clean
 
-all: gol-cpu gol-gpu
+all: gol-cpu gol-cpu-parallel
 
 gol-cpu: $(OBJ_CPU)
 
