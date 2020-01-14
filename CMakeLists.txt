@@ -20,5 +20,6 @@ if (NOT GoogleBenchmark_POPULATED)
 endif()
 
 add_subdirectory(src/bench)
-add_subdirectory(src/cpu)
-add_subdirectory(src/gpu)
+add_subdirectory(src/gol-cpu)
+add_subdirectory(src/bit-cpu)
+add_subdirectory(src/gol-gpu)

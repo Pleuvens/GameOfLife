@@ -118,7 +118,7 @@ void Map::basic_cpu_compute()
 void Map::parallel_cpu_compute()
 {
     std::vector<std::vector<Cell>> maps{height_};
-    for (auto map : maps)
+    for (auto& map : maps)
         map = std::vector<Cell>(width_);
 
     tbb::parallel_for(tbb::blocked_range<size_t>(0, height_),
