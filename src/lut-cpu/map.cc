@@ -86,38 +86,44 @@ int Map::number_of_alive_neighbours(size_t j, size_t i) const
     return nb;
 }
 
-void Map::lut_lookup(size_t ymin, size_t ymax)
+std::vector<uint8_t> Map::lut_lookup(size_t ymin, size_t ymax)
 {
+    auto begin = map_.begin() + ymin * WIDTH_;
+    auto end = map_.end() + ymax * WIDTH_;
+    std::vector<uint8_t> map{begin, end};
+
     for (size_t j = ymin; j < ymax; ++j)
     {
-        for (size_t i = 0; i < width_; ++i)
+        for (size_t i = 0; i < WIDTH_; ++i)
         {
             size_t up_j = (j - 1 + height_) % height_;
             size_t down_j = (j + 1) % height_;
             size_t left_i = (i - 1 + width_) % width_;
             size_t right_i = (i + 1) % width_;
 
-            uint8_t up_left = map_[up_j * width_ + left_i];
-            uint8_t up = map_[up_j * width_ + i];
-            uint8_t up_right = map_[up_j * width_ + right_i];
+            uint8_t up_left = map_[up_j * WIDTH_ + left_i];
+            uint8_t up = map_[up_j * WIDTH_ + i];
+            uint8_t up_right = map_[up_j * WIDTH_ + right_i];
 
-            uint8_t curr_left = map_[j * width_ + left_i];
-            uint8_t curr = map_[j * width_ + i];
-            uint8_t curr_right = map_[j * width_ + right_i];
+            uint8_t curr_left = map_[j * WIDTH_ + left_i];
+            uint8_t curr = map_[j * WIDTH_ + i];
+            uint8_t curr_right = map_[j * WIDTH_ + right_i];
 
-            uint8_t down_left = map_[down_j * width_ + left_i];
-            uint8_t down = map_[down_j * width_ + i];
-            uint8_t down_right = map_[down_j * width_ + right_i];
+            uint8_t down_left = map_[down_j * WIDTH_ + left_i];
+            uint8_t down = map_[down_j * WIDTH_ + i];
+            uint8_t down_right = map_[down_j * WIDTH_ + right_i];
 
-            uint32_t up_val = ((up_left << 16) + (up << 8) + up_right) & 0x1ff80;
-            uint32_t curr_val = ((curr_left << 16) + (curr << 8) + curr_right) & 0x1ff80;
-            uint32_t down_val = ((down_left << 16) + (down << 8) + down_right) & 0x1ff80;
+            uint32_t up_val = (((up_left << 16) + (up << 8) + up_right) & 0x1ff80) >> 7;
+            uint32_t curr_val = (((curr_left << 16) + (curr << 8) + curr_right) & 0x1ff80) >> 7;
+            uint32_t down_val = (((down_left << 16) + (down << 8) + down_right) & 0x1ff80) >> 7;
 
             uint32_t index = (up_val << 20) + (curr_val << 10) + down_val;
 
-            map_[j * width_ + i] = lut_[index];
+            map[(j - ymin) * WIDTH_ + i] = lut_[index];
         }
     }
+
+    return map;
 }
 
 static inline size_t get_state(size_t x, size_t y, size_t key)
@@ -163,17 +169,25 @@ void Map::parallel_precompute_lut()
 
 void Map::basic_cpu_compute()
 {
-    lut_lookup(0, height_);
+    map_ = lut_lookup(0, height_);
     generation_++;
 }
 
 void Map::parallel_cpu_compute()
 {
+    std::vector<std::vector<uint8_t>> maps{height_};
+    for (auto& map : maps)
+        map = std::vector<uint8_t>(WIDTH_);
+
     tbb::parallel_for(tbb::blocked_range<size_t>(0, height_),
                       [&](tbb::blocked_range<size_t> r) {
                           for (size_t i = r.begin(); i < r.end(); ++i)
-                              lut_lookup(i, i + 1);
+                              maps[i] = lut_lookup(i, i + 1);
                       });
+
+    for (size_t i = 0; i < height_; ++i)
+        for (size_t j = 0; j < width_; ++j)
+            map_[i * WIDTH_ + j] = maps[i][j];
 
     generation_++;
 }

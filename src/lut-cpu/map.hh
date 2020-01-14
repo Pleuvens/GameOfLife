@@ -29,7 +29,7 @@ public:
     void basic_precompute_lut();
     void parallel_precompute_lut();
 
-    void lut_lookup(size_t ymin, size_t ymax);
+    std::vector<uint8_t> lut_lookup(size_t ymin, size_t ymax);
     void basic_cpu_compute();
     void parallel_cpu_compute();
 
