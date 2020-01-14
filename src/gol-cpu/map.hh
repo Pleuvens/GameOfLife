@@ -43,7 +43,7 @@ public:
 
 private:
 
-    void gl_draw_square() const
+    void gl_draw_square(size_t y, size_t x) const;
 
     size_t height_ = 0;
     size_t width_ = 0;

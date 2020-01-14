@@ -146,7 +146,7 @@ void Map::gl_init()
     glfwMakeContextCurrent(window_);
 }
 
-void Map::gl_draw_square() const
+void Map::gl_draw_square(size_t y, size_t x) const
 {
     //Make sure our transformations don't affect any other
     //transformations in other code
@@ -177,7 +177,7 @@ void Map::gl_display()
         for (size_t x = 0; x < width_; x++)
         {
             if (map_[y * width_ + x] == Cell::alive)
-                gl_draw_square();
+                gl_draw_square(y, x);
         } 
     }
     glfwSwapBuffers(window_);

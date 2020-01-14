@@ -1,6 +1,7 @@
 add_library(libbit-cpu
     map.cc
     map.hh
+    ../gui/callbacks.cc
 )
 
 set_target_properties(libbit-cpu PROPERTIES
@@ -15,9 +16,14 @@ target_compile_options(libbit-cpu PRIVATE
 )
 
 target_link_libraries(libbit-cpu PRIVATE
-    ncurses
     pthread
     tbb
+    glfw
+    GL
+)
+
+target_include_directories(libbit-cpu PUBLIC
+    "../gui/"
 )
 
 add_executable(bit-cpu
@@ -40,6 +46,10 @@ target_link_libraries(bit-cpu PRIVATE
     libbit-cpu
 )
 
+target_include_directories(bit-cpu PUBLIC
+    "../gui/"
+)
+
 add_executable(bit-cpu-parallel
     bit-cpu-parallel.cc
 )
@@ -58,4 +68,8 @@ target_compile_options(bit-cpu-parallel PRIVATE
 
 target_link_libraries(bit-cpu-parallel PRIVATE
     libbit-cpu
+)
+
+target_include_directories(bit-cpu-parallel PUBLIC
+    "../gui/"
 )

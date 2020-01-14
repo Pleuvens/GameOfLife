@@ -19,6 +19,8 @@ target_compile_options(libgol-cpu PRIVATE
 target_link_libraries(libgol-cpu PRIVATE
     pthread
     tbb
+    glfw
+    GL
 )
 
 target_include_directories(libgol-cpu PUBLIC

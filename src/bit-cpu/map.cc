@@ -1,3 +1,4 @@
+#include "callbacks.hh"
 #include "map.hh"
 
 #include <ctime>
@@ -13,8 +14,6 @@ Map::Map(const std::string& path)
     , width_{48}
     , map_(height_ * WIDTH_)
 {
-    initscr();
-
     std::ifstream in(path);
     if (!in.good())
         throw std::invalid_argument("file not found");
@@ -49,16 +48,9 @@ Map::Map(size_t height, size_t width)
     , width_{width}
     , map_(height_ * WIDTH_)
 {
-    initscr();
-
     std::srand(std::time(nullptr));
     for (size_t i = 0; i < map_.size(); i++)
         map_[i] = std::rand() % 256;
-}
-
-Map::~Map()
-{
-    endwin();
 }
 
 int Map::number_of_alive_neighbours(size_t j, size_t i) const
@@ -129,42 +121,67 @@ void Map::parallel_cpu_compute()
     generation_++;
 }
 
-void Map::ascii_display() const
+void Map::gl_init()
 {
-    wmove(stdscr, 0, 0);
-    wprintw(stdscr, "Generation %d:\n", generation_);
-
-    for (size_t j = 0; j < height_; j++)
+    glfwSetErrorCallback(error_callback);
+    if (!glfwInit())
+         exit(1);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+    glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+    window_ = glfwCreateWindow(width_, height_, "Game of Life", 
+           glfwGetPrimaryMonitor(), NULL);
+    if (!window_)
     {
-        for (size_t i = 0; i < width_; i++)
-        {
-            waddch(stdscr, '=');
-            waddch(stdscr, '=');
-        }
-        waddch(stdscr, '\n');
-
-        waddch(stdscr, '|');
-        for (size_t i = 0; i < width_; i++)
-        {
-            if (map_[j * WIDTH_ + i / 8] & BIT8 >> i % 8)
-            {
-                waddch(stdscr, 'O');
-            }
-            else
-            {
-                waddch(stdscr, ' ');
-            }
-            waddch(stdscr, '|');
-        }
-        waddch(stdscr, '\n');
+        glfwTerminate();
+        exit(1);
     }
+    glfwSetKeyCallback(window_, key_callback);
+    glfwMakeContextCurrent(window_);
+}
 
-    for (size_t i = 0; i < width_; i++)
+void Map::gl_draw_square(size_t y, size_t x) const
+{
+    //Make sure our transformations don't affect any other
+    //transformations in other code
+    glPushMatrix();
+    //Translate rectangle to its assigned x and y position
+    glTranslatef(x, y, 0.0f);
+    glBegin(GL_QUADS);
+    glColor3f(1, 1, 1);
+    //Draw the four corners of the rectangle
+    glVertex2f(0, 0);
+    glVertex2f(0, 1);
+    glVertex2f(1, 1);
+    glVertex2f(1, 0);
+    glEnd();
+    glPopMatrix();
+}
+
+void Map::gl_display()
+{
+    if (window_ == nullptr)
+        gl_init();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glLoadIdentity();
+    glOrtho(0, width_, height_, 0, 0, 1);
+    for (size_t y = 0; y < height_; y++)
     {
-        waddch(stdscr, '=');
-        waddch(stdscr, '=');
+        for (size_t x = 0; x < width_; x++)
+        {
+            if (map_[y * WIDTH_ + x / 8] & BIT8 >> x % 8)
+                gl_draw_square(y, x);
+        } 
     }
-    waddch(stdscr, '\n');
+    glfwSwapBuffers(window_);
+    glfwPollEvents();
+}
 
-    wrefresh(stdscr);
+void Map::gl_destroy()
+{
+    if (window_)
+        glfwDestroyWindow(window_);
+    glfwTerminate();
 }
