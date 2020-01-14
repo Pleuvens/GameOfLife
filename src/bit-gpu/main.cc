@@ -1,15 +1,15 @@
-#include "gol-gpu.hh"
-
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <vector>
 
+#include "gol-gpu.hh"
+
 #define WIDTH (width / 8)
 #define BIT8 (1 << 7)
 
-static void parse_plaintext(const std::string& path, uint8_t* buffer,
-                            int width, int)
+static void parse_plaintext(const std::string& path, uint8_t* buffer, int width,
+                            int)
 {
     std::ifstream in(path);
     if (!in.good())

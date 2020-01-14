@@ -1,5 +1,6 @@
 #include <chrono>
 #include <csignal>
+#include <iostream>
 #include <thread>
 
 #include "map.hh"
@@ -18,18 +19,24 @@ int main(int argc, char* argv[])
 {
     signal(SIGINT, sig_handler);
 
-    Map m(20, 20);
+    Map m;
 
     if (argc == 2)
+    {
         m = Map(argv[1]);
+    }
+    else
+    {
+        m = Map(720, 1280);
+    }
 
-    while (running)
+    while (running && !m.window_should_close())
     {
         m.basic_cpu_compute();
-        m.ascii_display();
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        m.gl_display();
     }
+
+    m.gl_destroy();
 
     return 0;
 }

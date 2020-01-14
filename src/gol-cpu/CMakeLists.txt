@@ -2,6 +2,7 @@ add_library(libgol-cpu
     gol-cpu.cc
     map.cc
     map.hh
+    ../gui/callbacks.cc
 )
 
 set_target_properties(libgol-cpu PROPERTIES
@@ -16,9 +17,14 @@ target_compile_options(libgol-cpu PRIVATE
 )
 
 target_link_libraries(libgol-cpu PRIVATE
-    ncurses
     pthread
     tbb
+    glfw
+    GL
+)
+
+target_include_directories(libgol-cpu PUBLIC
+    "../gui"
 )
 
 add_executable(gol-cpu
@@ -45,6 +51,11 @@ target_link_libraries(gol-cpu PRIVATE
     libgol-cpu
 )
 
+
+target_include_directories(gol-cpu PUBLIC
+    "../gui"
+)
+
 add_executable(gol-cpu-parallel
     gol-cpu-parallel.cc
 )
@@ -67,4 +78,8 @@ target_compile_options(gol-cpu-parallel PRIVATE
 
 target_link_libraries(gol-cpu-parallel PRIVATE
     libgol-cpu
+)
+
+target_include_directories(gol-cpu-parallel PUBLIC
+    "../gui"
 )

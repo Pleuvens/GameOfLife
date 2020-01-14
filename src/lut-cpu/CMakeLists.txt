@@ -2,6 +2,7 @@ add_library(liblut-cpu
     lut-cpu.hh
     map.cc
     map.hh
+    ../gui/callbacks.cc
 )
 
 set_target_properties(liblut-cpu PROPERTIES
@@ -16,9 +17,14 @@ target_compile_options(liblut-cpu PRIVATE
 )
 
 target_link_libraries(liblut-cpu PRIVATE
-    ncurses
     pthread
     tbb
+    glfw
+    GL
+)
+
+target_include_directories(liblut-cpu PUBLIC
+    "../gui/"
 )
 
 add_executable(lut-cpu
@@ -41,6 +47,10 @@ target_link_libraries(lut-cpu PRIVATE
     liblut-cpu
 )
 
+target_include_directories(lut-cpu PUBLIC
+    "../gui/"
+)
+
 add_executable(lut-cpu-parallel
     lut-cpu-parallel.cc
 )
@@ -59,4 +69,8 @@ target_compile_options(lut-cpu-parallel PRIVATE
 
 target_link_libraries(lut-cpu-parallel PRIVATE
     liblut-cpu
+)
+
+target_include_directories(lut-cpu-parallel PUBLIC
+    "../gui/"
 )

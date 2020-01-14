@@ -37,52 +37,10 @@ __global__ void compute_iteration(char* buffer, char* out_buffer, size_t pitch,
         n_alive == 3 || (buffer[y * pitch + x] && n_alive == 2);
 }
 
-static void display(char* dev_buffer, size_t pitch, int width, int height,
-                    int generation)
-{
-    auto buf = new char[width * height];
-    if (cudaMemcpy2D(buf, width * sizeof(char), dev_buffer, pitch,
-                     width * sizeof(char), height, cudaMemcpyDeviceToHost))
-        abortError("Fail memcpy device to host");
-
-    wmove(stdscr, 0, 0);
-    wprintw(stdscr, "Generation %d:\n", generation);
-
-    for (size_t j = 0; j < height; j++)
-    {
-        for (size_t i = 0; i < width; i++)
-        {
-            waddch(stdscr, '=');
-            waddch(stdscr, '=');
-        }
-        waddch(stdscr, '\n');
-
-        waddch(stdscr, '|');
-        for (size_t i = 0; i < width; i++)
-        {
-            if (buf[j * width + i] == 0)
-                waddch(stdscr, ' ');
-            else
-                waddch(stdscr, 'O');
-            waddch(stdscr, '|');
-        }
-        waddch(stdscr, '\n');
-    }
-
-    for (size_t i = 0; i < width; i++)
-    {
-        waddch(stdscr, '=');
-        waddch(stdscr, '=');
-    }
-    waddch(stdscr, '\n');
-
-    wrefresh(stdscr);
-    delete buf;
-}
-
 static void run_compute_iteration(char* dev_buffer, char* out_dev_buffer,
                                   size_t pitch, size_t pitch_out, int width,
-                                  int height, int n_iterations)
+                                  int height,
+                                  int n_iterations) //, GLFWwindow *window)
 {
     constexpr int block_size = 32;
     int w = std::ceil(1.f * width / block_size);
@@ -96,8 +54,7 @@ static void run_compute_iteration(char* dev_buffer, char* out_dev_buffer,
         compute_iteration<<<dimGrid, dimBlock>>>(
             dev_buffer, out_dev_buffer, pitch, pitch_out, width, height);
         std::swap(dev_buffer, out_dev_buffer);
-        display(dev_buffer, pitch, width, height, i);
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        // gui_display(window, dev_buffer, pitch, height, width);
     }
 
     if (cudaPeekAtLastError())
@@ -127,10 +84,10 @@ void gol_gpu(char* buffer, int width, int height, int n_iterations)
                      width * sizeof(char), height, cudaMemcpyHostToDevice))
         abortError("Fail memcpy host to device");
 
-    initscr();
+    // GLFWwindow *window = gui_init(height, width);
     run_compute_iteration(dev_buffer, out_dev_buffer, pitch, pitch_out, width,
-                          height, n_iterations);
-    endwin();
+                          height, n_iterations); //, window);
+    // gui_destroy(window);
 
     rc = cudaFree(dev_buffer);
     if (rc)
