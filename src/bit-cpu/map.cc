@@ -11,7 +11,7 @@
 Map::Map(const std::string& path)
     : height_{16}
     , width_{48}
-    , map_(height_ * width_)
+    , map_(height_ * WIDTH_)
 {
     initscr();
 
@@ -31,10 +31,10 @@ Map::Map(const std::string& path)
             switch (line[i])
             {
             case '.':
-                map_[j * width_ + i] = Cell::dead;
+                map_[j * WIDTH_ + i / 8] &= ~(BIT8 >> i % 8);
                 break;
             case 'O':
-                map_[j * width_ + i] = Cell::alive;
+                map_[j * WIDTH_ + i / 8] |= BIT8 >> i % 8;
                 break;
             default:
                 throw std::invalid_argument("invalid format");
@@ -47,15 +47,13 @@ Map::Map(const std::string& path)
 Map::Map(size_t height, size_t width)
     : height_{height}
     , width_{width}
-    , map_(height * width)
+    , map_(height_ * WIDTH_)
 {
     initscr();
 
     std::srand(std::time(nullptr));
-    for (size_t i = 0; i < height_ * width_; i++)
-    {
-        map_[i] = Cell(std::rand() / ((RAND_MAX + 1u) / 2));
-    }
+    for (size_t i = 0; i < map_.size(); i++)
+        map_[i] = std::rand() % 256;
 }
 
 Map::~Map()
@@ -70,38 +68,38 @@ int Map::number_of_alive_neighbours(size_t j, size_t i) const
     size_t left_i = (i - 1 + width_) % width_;
     size_t right_i = (i + 1) % width_;
 
-    int nb = map_[up_j * width_ + left_i] == Cell::alive;
-    nb += map_[up_j * width_ + i] == Cell::alive;
-    nb += map_[up_j * width_ + right_i] == Cell::alive;
-    nb += map_[j * width_ + left_i] == Cell::alive;
-    nb += map_[j * width_ + right_i] == Cell::alive;
-    nb += map_[down_j * width_ + left_i] == Cell::alive;
-    nb += map_[down_j * width_ + i] == Cell::alive;
-    nb += map_[down_j * width_ + right_i] == Cell::alive;
+    int nb = map_[up_j * WIDTH_ + left_i / 8] & BIT8 >> left_i % 8
+        + map_[up_j * WIDTH_ + i / 8] & BIT8 >> i % 8
+        + map_[up_j * WIDTH_ + right_i / 8] & BIT8 >> right_i % 8
+        + map_[j * WIDTH_ + left_i / 8] & BIT8 >> left_i % 8
+        + map_[j * WIDTH_ + right_i / 8] & BIT8 >> right_i % 8
+        + map_[down_j * WIDTH_ + left_i / 8] & BIT8 >> left_i % 8
+        + map_[down_j * WIDTH_ + i / 8] & BIT8 >> i % 8
+        + map_[down_j * WIDTH_ + right_i / 8] & BIT8 >> right_i % 8;
 
     return nb;
 }
 
-std::vector<Cell> Map::compute_task(size_t ymin, size_t ymax)
+std::vector<uint8_t> Map::compute_task(size_t ymin, size_t ymax)
 {
-    auto begin = map_.begin() + ymin * width_;
-    auto end = map_.begin() + ymax * width_;
-    std::vector<Cell> map{begin, end};
+    auto begin = map_.begin() + ymin * WIDTH_;
+    auto end = map_.begin() + ymax * WIDTH_;
+    std::vector<uint8_t> map{begin, end};
 
     for (size_t j = ymin; j < ymax; j++)
     {
         for (size_t i = 0; i < width_; i++)
         {
             auto nb_alive_neighbours = number_of_alive_neighbours(j, i);
-            if (map_[j * width_ + i] == Cell::alive)
+            if (map_[j * WIDTH_ + i / 8] & BIT8 >> i % 8)
             {
                 if (nb_alive_neighbours != 2 && nb_alive_neighbours != 3)
-                    map[(j - ymin) * width_ + i] = Cell::dead;
+                    map[(j - ymin) * WIDTH_ + i / 8] &= ~(BIT8 >> i % 8);
             }
             else
             {
                 if (nb_alive_neighbours == 3)
-                    map[(j - ymin) * width_ + i] = Cell::alive;
+                    map[(j - ymin) * WIDTH_ + i / 8] |= BIT8 >> i % 8;
             }
         }
     }
@@ -117,9 +115,9 @@ void Map::basic_cpu_compute()
 
 void Map::parallel_cpu_compute()
 {
-    std::vector<std::vector<Cell>> maps{height_};
+    std::vector<std::vector<uint8_t>> maps{height_};
     for (auto& map : maps)
-        map = std::vector<Cell>(width_);
+        map = std::vector<uint8_t>(WIDTH_);
 
     tbb::parallel_for(tbb::blocked_range<size_t>(0, height_),
                       [&](tbb::blocked_range<size_t> r) {
@@ -128,8 +126,8 @@ void Map::parallel_cpu_compute()
                       });
 
     for (size_t i = 0; i < height_; ++i)
-        for (size_t j = 0; j < width_; ++j)
-            map_[i * width_ + j] = maps[i][j];
+        for (size_t j = 0; j < WIDTH_; ++j)
+            map_[i * WIDTH_ + j] = maps[i][j];
 
     generation_++;
 }
@@ -151,7 +149,7 @@ void Map::ascii_display() const
         waddch(stdscr, '|');
         for (size_t i = 0; i < width_; i++)
         {
-            if (map_[j * width_ + i] == Cell::alive)
+            if (map_[j * WIDTH_ + i / 8] & BIT8 >> i % 8)
             {
                 waddch(stdscr, 'O');
             }
