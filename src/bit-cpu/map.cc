@@ -68,14 +68,14 @@ int Map::number_of_alive_neighbours(size_t j, size_t i) const
     size_t left_i = (i - 1 + width_) % width_;
     size_t right_i = (i + 1) % width_;
 
-    int nb = map_[up_j * WIDTH_ + left_i / 8] & BIT8 >> left_i % 8
-        + map_[up_j * WIDTH_ + i / 8] & BIT8 >> i % 8
-        + map_[up_j * WIDTH_ + right_i / 8] & BIT8 >> right_i % 8
-        + map_[j * WIDTH_ + left_i / 8] & BIT8 >> left_i % 8
-        + map_[j * WIDTH_ + right_i / 8] & BIT8 >> right_i % 8
-        + map_[down_j * WIDTH_ + left_i / 8] & BIT8 >> left_i % 8
-        + map_[down_j * WIDTH_ + i / 8] & BIT8 >> i % 8
-        + map_[down_j * WIDTH_ + right_i / 8] & BIT8 >> right_i % 8;
+    int nb = ((map_[up_j * WIDTH_ + left_i / 8] & BIT8 >> left_i % 8) != 0)
+        + ((map_[up_j * WIDTH_ + i / 8] & BIT8 >> i % 8) != 0)
+        + ((map_[up_j * WIDTH_ + right_i / 8] & BIT8 >> right_i % 8) != 0)
+        + ((map_[j * WIDTH_ + left_i / 8] & BIT8 >> left_i % 8) != 0)
+        + ((map_[j * WIDTH_ + right_i / 8] & BIT8 >> right_i % 8) != 0)
+        + ((map_[down_j * WIDTH_ + left_i / 8] & BIT8 >> left_i % 8) != 0)
+        + ((map_[down_j * WIDTH_ + i / 8] & BIT8 >> i % 8) != 0)
+        + ((map_[down_j * WIDTH_ + right_i / 8] & BIT8 >> right_i % 8) != 0);
 
     return nb;
 }
