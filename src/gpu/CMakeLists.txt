@@ -1,13 +1,33 @@
-add_executable(gol-gpu
+add_library(libgol-gpu
     gol-gpu.cu
+    gol-gpu.hh
+)
+
+set_target_properties(libgol-gpu PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+)
+
+target_link_libraries(libgol-gpu PRIVATE
+    ncurses
+    pthread
+)
+
+add_executable(gol-gpu
+    main.cc
 )
 
 set_target_properties(gol-gpu PROPERTIES
-    CUDA_SEPARABLE_COMPILATION ON
+    CXX_STANDARD 17
+    CXX_EXTENSIONS OFF
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
+target_compile_options(gol-gpu PRIVATE
+    "-Wall"
+    "-Wextra"
+    "-pedantic"
+)
+
 target_link_libraries(gol-gpu PRIVATE
-    ncurses
-    pthread
+    libgol-gpu
 )
