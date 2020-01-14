@@ -9,8 +9,8 @@ set_target_properties(bench PROPERTIES
 )
 
 target_include_directories(bench PUBLIC
-    "../gpu"
-    "../cpu"
+    "../gol-cpu"
+    "../gol-gpu"
 )
 
 target_compile_options(bench PRIVATE
