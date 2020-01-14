@@ -10,6 +10,7 @@ set_target_properties(bench PROPERTIES
 
 target_include_directories(bench PUBLIC
     "../gpu"
+    "../cpu"
 )
 
 target_compile_options(bench PRIVATE
@@ -20,5 +21,6 @@ target_compile_options(bench PRIVATE
 
 target_link_libraries(bench PRIVATE
    libgol-gpu
+   libgol-cpu
    benchmark
 )
