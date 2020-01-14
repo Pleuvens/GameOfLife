@@ -1,5 +1,10 @@
 add_library(libgol-gpu
     gol-gpu.cu
+    gol-gpu.hh
+    ../gui/callbacks.cc
+    ../gui/callbacks.hh
+    ../gui/gui.cu
+    ../gui/gui.hh
 )
 
 set_target_properties(libgol-gpu PROPERTIES
@@ -9,6 +14,8 @@ set_target_properties(libgol-gpu PROPERTIES
 target_link_libraries(libgol-gpu PRIVATE
     ncurses
     pthread
+    glfw
+    GL
 )
 
 add_executable(gol-gpu
@@ -33,4 +40,12 @@ target_compile_options(gol-gpu PRIVATE
 
 target_link_libraries(gol-gpu PRIVATE
     libgol-gpu
+)
+
+target_include_directories(libgol-gpu PUBLIC
+    "../gui/"
+)
+
+target_include_directories(gol-gpu PUBLIC
+    "../gui/"
 )
