@@ -1,6 +1,6 @@
+#include <cstdint>
 #include <iostream>
 #include <ncurses.h>
-#include <cstdint>
 #include <thread>
 
 #define WIDTH (width / 8)
@@ -35,17 +35,18 @@ __global__ void compute_iteration(uint8_t* buffer, uint8_t* out_buffer,
         int left_x = (real_x - 1 + width) % width;
         int right_x = (real_x + 1) % width;
 
-        int n_alive = ((buffer[up_y * pitch + left_x / 8] & BIT8 >> left_x % 8) != 0)
+        int n_alive =
+            ((buffer[up_y * pitch + left_x / 8] & BIT8 >> left_x % 8) != 0)
             + ((buffer[up_y * pitch + real_x / 8] & BIT8 >> real_x % 8) != 0)
             + ((buffer[up_y * pitch + right_x / 8] & BIT8 >> right_x % 8) != 0)
             + ((buffer[y * pitch + left_x / 8] & BIT8 >> left_x % 8) != 0)
             + ((buffer[y * pitch + right_x / 8] & BIT8 >> right_x % 8) != 0)
             + ((buffer[down_y * pitch + left_x / 8] & BIT8 >> left_x % 8) != 0)
             + ((buffer[down_y * pitch + real_x / 8] & BIT8 >> real_x % 8) != 0)
-            + ((buffer[down_y * pitch + right_x / 8] & BIT8 >> right_x % 8) != 0);
+            + ((buffer[down_y * pitch + right_x / 8] & BIT8 >> right_x % 8)
+               != 0);
 
-        if (n_alive == 3
-            || (buffer[y * pitch + real_x / 8] && n_alive == 2))
+        if (n_alive == 3 || (buffer[y * pitch + real_x / 8] && n_alive == 2))
             out_buffer[y * pitch + real_x / 8] |= BIT8 >> real_x % 8;
         else
             out_buffer[y * pitch + real_x / 8] &= ~(BIT8 >> real_x % 8);

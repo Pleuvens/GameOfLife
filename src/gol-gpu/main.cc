@@ -1,9 +1,9 @@
-#include "gol-gpu.hh"
-
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <vector>
+
+#include "gol-gpu.hh"
 
 static void parse_plaintext(const std::string& path, char* buffer, int width,
                             int)

@@ -24,7 +24,9 @@ int main(int argc, char* argv[])
     if (argc == 2)
     {
         m = Map(argv[1]);
-    } else {
+    }
+    else
+    {
         m = Map(720, 1280);
     }
 

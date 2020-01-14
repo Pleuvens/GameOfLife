@@ -1,4 +1,3 @@
-#include "callbacks.hh"
 #include "map.hh"
 
 #include <ctime>
@@ -9,11 +8,13 @@
 #include <tbb/parallel_for.h>
 #include <thread>
 
+#include "callbacks.hh"
+
 Map::Map(const std::string& path)
     : height_{16}
     , width_{48}
     , map_(height_ * width_)
-{ 
+{
     std::ifstream in(path);
     if (!in.good())
         throw std::invalid_argument("file not found");
@@ -130,13 +131,13 @@ void Map::gl_init()
 {
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
-         exit(1);
+        exit(1);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
     glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
-    window_ = glfwCreateWindow(width_, height_, "Game of Life", 
-           glfwGetPrimaryMonitor(), NULL);
+    window_ = glfwCreateWindow(width_, height_, "Game of Life",
+                               glfwGetPrimaryMonitor(), NULL);
     if (!window_)
     {
         glfwTerminate();
@@ -148,14 +149,14 @@ void Map::gl_init()
 
 void Map::gl_draw_square(size_t y, size_t x) const
 {
-    //Make sure our transformations don't affect any other
-    //transformations in other code
+    // Make sure our transformations don't affect any other
+    // transformations in other code
     glPushMatrix();
-    //Translate rectangle to its assigned x and y position
+    // Translate rectangle to its assigned x and y position
     glTranslatef(x, y, 0.0f);
     glBegin(GL_QUADS);
     glColor3f(1, 1, 1);
-    //Draw the four corners of the rectangle
+    // Draw the four corners of the rectangle
     glVertex2f(0, 0);
     glVertex2f(0, 1);
     glVertex2f(1, 1);
@@ -178,7 +179,7 @@ void Map::gl_display()
         {
             if (map_[y * width_ + x] == Cell::alive)
                 gl_draw_square(y, x);
-        } 
+        }
     }
     glfwSwapBuffers(window_);
     glfwPollEvents();

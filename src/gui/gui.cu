@@ -1,13 +1,14 @@
+#include <iostream>
+
 #include "callbacks.hh"
 #include "gui.hh"
 
-#include <iostream>
-
-__attribute__((noinline))
-static void _guiAbortError(const char* msg, const char* fname, int line)
+__attribute__((noinline)) static void
+_guiAbortError(const char* msg, const char* fname, int line)
 {
     cudaError_t err = cudaGetLastError();
-    std::clog << fname << ": " << "line: " << line << ": " << msg << '\n';
+    std::clog << fname << ": "
+              << "line: " << line << ": " << msg << '\n';
     std::clog << "Error " << cudaGetErrorName(err) << ": "
               << cudaGetErrorString(err) << '\n';
     std::exit(1);
@@ -19,13 +20,13 @@ GLFWwindow* gui_init(size_t height, size_t width)
 {
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
-         exit(1);
+        exit(1);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
     glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
     glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
-    GLFWwindow *window = glfwCreateWindow(width, height, "Game of Life", 
-           glfwGetPrimaryMonitor(), NULL);
+    GLFWwindow* window = glfwCreateWindow(width, height, "Game of Life",
+                                          glfwGetPrimaryMonitor(), NULL);
     if (!window)
     {
         glfwTerminate();
@@ -38,14 +39,14 @@ GLFWwindow* gui_init(size_t height, size_t width)
 
 void gui_draw_square(size_t y, size_t x)
 {
-    //Make sure our transformations don't affect any other
-    //transformations in other code
+    // Make sure our transformations don't affect any other
+    // transformations in other code
     glPushMatrix();
-    //Translate rectangle to its assigned x and y position
+    // Translate rectangle to its assigned x and y position
     glTranslatef(x, y, 0.0f);
     glBegin(GL_QUADS);
     glColor3f(1, 1, 1);
-    //Draw the four corners of the rectangle
+    // Draw the four corners of the rectangle
     glVertex2f(0, 0);
     glVertex2f(0, 1);
     glVertex2f(1, 1);
@@ -54,8 +55,8 @@ void gui_draw_square(size_t y, size_t x)
     glPopMatrix();
 }
 
-void gui_display(GLFWwindow *window, char *buffer, size_t pitch, size_t height,
-        size_t width)
+void gui_display(GLFWwindow* window, char* buffer, size_t pitch, size_t height,
+                 size_t width)
 {
     auto buf = new char[width * height];
     if (cudaMemcpy2D(buf, width * sizeof(char), buffer, pitch,
@@ -79,12 +80,12 @@ void gui_display(GLFWwindow *window, char *buffer, size_t pitch, size_t height,
     delete buf;
 }
 
-int window_should_close(GLFWwindow *window)
+int window_should_close(GLFWwindow* window)
 {
     return window ? glfwWindowShouldClose(window) : 0;
 }
 
-void gui_destroy(GLFWwindow *window)
+void gui_destroy(GLFWwindow* window)
 {
     if (window)
         glfwDestroyWindow(window);

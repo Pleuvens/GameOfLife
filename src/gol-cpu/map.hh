@@ -28,12 +28,14 @@ public:
     {
         return j < height_ && i < width_;
     }
- 
+
     void gl_init();
     void gl_destroy();
     void gl_display();
-    inline int window_should_close() const 
-    { return window_ ? glfwWindowShouldClose(window_) : 0; }
+    inline int window_should_close() const
+    {
+        return window_ ? glfwWindowShouldClose(window_) : 0;
+    }
 
     int number_of_alive_neighbours(size_t j, size_t i) const;
 
@@ -42,7 +44,6 @@ public:
     void parallel_cpu_compute();
 
 private:
-
     void gl_draw_square(size_t y, size_t x) const;
 
     size_t height_ = 0;
