@@ -1,5 +1,4 @@
 add_library(libbit-cpu
-    bit-cpu.hh
     map.cc
     map.hh
 )
